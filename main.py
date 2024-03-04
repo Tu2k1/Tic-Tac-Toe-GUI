@@ -2,30 +2,38 @@ from tkinter import *
 from tkinter.messagebox import *
 import random
 
+# Dictionary representing the Tic Tac Toe board with positions as keys and empty strings as initial values
 board = {
     'UL': '', 'UM': '', 'UR': '',
     'ML': '', 'MM': '', 'MR': '',
     'LL': '', 'LM': '', 'LR': '',
 }
 
+# Dictionary mapping grid positions to board positions
 positions = {
     (0, 0): 'UL', (0, 1): 'UM', (0, 2): 'UR',
     (1, 0): 'ML', (1, 1): 'MM', (1, 2): 'MR',
     (2, 0): 'LL', (2, 1): 'LM', (2, 2): 'LR',
 }
+
+# Variable to keep track of the current player ('X' or 'O')
 current_player = 'X'
 
 
+# Function to check if the board is full
 def is_full():
     return '' not in board.values()
 
 
+# Function to check if a player has won
 def is_winner(user_symbol, board):
+    # List of winning combinations
     winning_combinations = [
         ['UL', 'UM', 'UR'], ['ML', 'MM', 'MR'], ['LL', 'LM', 'LR'],  # Rows
         ['UL', 'ML', 'LL'], ['UM', 'MM', 'LM'], ['UR', 'MR', 'LR'],  # Columns
         ['UL', 'MM', 'LR'], ['UR', 'MM', 'LL']  # Diagonals
     ]
+    # Check each winning combination
     for combo in winning_combinations:
         if all(board[i] == user_symbol for i in combo):
             return True
@@ -33,11 +41,13 @@ def is_winner(user_symbol, board):
     return False
 
 
+# Function to clear the board
 def clear_board():
     for pos in board:
         board[pos] = ''
 
 
+# Function to handle the 'play again' option
 def play_again():
     global current_player
     answer = askyesno('play again', 'want to play again?')
@@ -51,6 +61,7 @@ def play_again():
         start()
 
 
+# Function for AI to make a move
 def ai_play():
     global current_player
     move = ai_move()
@@ -67,20 +78,24 @@ def ai_play():
     turn_label.config(text=f"Player {current_player} Turn")
 
 
+# Function to determine AI's move
 def ai_move():
     possiblemoves = []
+    # Find empty positions on the board
     for position in board:
         if board[position] == '':
             possiblemoves.append(position)
     if not possiblemoves:
         return
     else:
+        # Check for winning moves
         for player in ['O', 'X']:
             for move in possiblemoves:
                 boardcopy = board.copy()
                 boardcopy[move] = player
                 if is_winner(player, boardcopy):
                     return move
+        # Prioritize corners, then edges
         corner = []
         for move in possiblemoves:
             if move in ['UL', 'UR', 'LL', 'LR']:
@@ -97,6 +112,7 @@ def ai_move():
             return i
 
 
+# Function to set window dimensions and position
 def set_window(window):
     window_width = 400
     window_height = 400
@@ -107,9 +123,11 @@ def set_window(window):
     window.geometry(f"{window_width}x{window_height}+{x}+{y}")
 
 
+# Function to handle button clicks
 def button_clicked(pos, cp):
     global buttons, current_player
     if cp == 'Player':
+        # Handle player's move
         board[pos] = current_player
         if is_full():
             showinfo('Draw', 'Draw!')
@@ -122,6 +140,7 @@ def button_clicked(pos, cp):
         current_player = 'O' if current_player == 'X' else 'X'
         turn_label.config(text=f"Player {current_player} Turn")
     elif cp == 'Computer':
+        # Handle AI's move
         board[pos] = current_player
         if is_full():
             showinfo('Draw', 'Draw!')
@@ -136,6 +155,7 @@ def button_clicked(pos, cp):
         ai_play()
 
 
+# Function to create the game window
 def play_window(cp):
     global board, buttons, turn_label, board_window
     board_window = Tk()
@@ -144,6 +164,7 @@ def play_window(cp):
     turn_label = Label(board_window, text=f"Player {current_player} Turn", font=("Arial", 16))
     turn_label.grid(row=0, column=1, pady=10)
 
+    # Frame to contain the buttons
     button_container = Frame(board_window)
     button_container.grid(row=1, column=0, columnspan=3)
     buttons = {}
@@ -157,7 +178,8 @@ def play_window(cp):
                                        command=lambda pos=position: button_clicked(pos, cp))
             buttons[position].grid(row=i, column=j, padx=10, pady=10, sticky='nsew')
 
-    board_window.update_idletasks()  # Update the layout
+    # Update the layout and position the buttons in the center
+    board_window.update_idletasks()
     x = (board_window.winfo_width() - button_container.winfo_width()) // 2
     y = (board_window.winfo_height() - button_container.winfo_height()) // 2
     button_container.grid_propagate(False)  # Disable frame resizing
@@ -166,6 +188,7 @@ def play_window(cp):
     board_window.mainloop()
 
 
+# Function to start the game
 def start():
     global root
     root = Tk()
